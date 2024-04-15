@@ -7,5 +7,7 @@ export const deleteFile = (filePath: string) => {
     if (err) throw err;
   });
 
-  return 'File deleted';
+  return {
+    message: 'File deleted'
+  };
 };

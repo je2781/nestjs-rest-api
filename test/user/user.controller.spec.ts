@@ -112,7 +112,9 @@ describe('UserController (unit)', () => {
       });
     });
     describe('Avatar', () => {
-      const mockDeleteFunctionReturn = 'File deleted from file system';
+      const mockDeleteFunctionReturn = {
+        message: 'File deleted from file system'
+      };
 
       it('should delete avatar fromm db entry, and file system', async () => {
         jest
