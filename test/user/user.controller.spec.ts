@@ -10,18 +10,20 @@ import * as path from 'path';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { PrismaModule } from '../../src/prisma/prisma.module';
+import { PrismaService } from '../../src/prisma/prisma.service';
 
 describe('UserController (unit)', () => {
   let userService: UserService;
   let userController: UserController;
+  let moduleRef: TestingModule;
+  let prisma: PrismaService;
 
   beforeAll(async () => {
-    const moduleRef: TestingModule = await Test.createTestingModule({
+    moduleRef = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({
           isGlobal: true,
         }),
-
         PrismaModule,
         ClientsModule.register([
           {
@@ -68,7 +70,10 @@ describe('UserController (unit)', () => {
     userController = moduleRef.get<UserController>(UserController);
   });
 
-  afterAll(async () => {});
+  afterAll(async () => {
+    prisma = moduleRef.get<PrismaService>(PrismaService);
+    await prisma.cleanUp();
+  });
 
   describe('User', () => {
     describe('Create User', () => {
@@ -77,12 +82,13 @@ describe('UserController (unit)', () => {
         name: 'tester',
       };
 
-      it('should create user entry in db', async () => {
+      it('should create user entry in db, and return the user', async () => {
         const createdUserMock = { id: 1, ...dto };
 
         jest
           .spyOn(userService, 'createUser')
           .mockResolvedValue(createdUserMock);
+     
         const result = await userController.createUser(dto);
 
         expect(result).toBe(createdUserMock);
