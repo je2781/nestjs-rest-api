@@ -1,0 +1,42 @@
+version: '3.9'
+services:
+  dev-db:
+    image: mongodb/mongodb-community-server:4.4.25-ubi8 
+    # ports:
+    #     - 27018:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: jezeadiebuo5
+      MONGO_INITDB_ROOT_PASSWORD: tPwmH1qY7DjbA2Vj
+
+    networks:
+      - reqres
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    ports:
+        - 5672:5672
+    # volumes:
+    #     - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+    #     - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - reqres
+  test-rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    ports:
+        - 5675:5672
+    # volumes:
+    #     - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+    #     - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    networks:
+      - reqres
+  test-db:
+    image: mongodb/mongodb-community-server:4.4.25-ubi8
+    # ports:
+    #     - 27019:27017
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: new-user_01
+      MONGO_INITDB_ROOT_PASSWORD: HtniDMg3Wm1A2kzc
+    networks:
+      - reqres
+  
+networks:
+  reqres:
