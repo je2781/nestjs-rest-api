@@ -1,24 +1,23 @@
-import { Inject, Injectable } from "@nestjs/common";
-import { PrismaService } from "../prisma/prisma.service";
-import { CreateUserDto } from "./dto";
-import { MailerService } from "@nestjs-modules/mailer";
-import { readFileSync, writeFile } from "fs";
-import * as path from "path";
-import * as pug from "pug";
-import { ClientProxy } from "@nestjs/microservices";
-import { deleteFile } from "../util/file";
-import { HttpService } from "@nestjs/axios";
-import DIR from "../util/path";
-import { User } from "@prisma/client";
-import { v4 as hashGen } from "uuid";
+import { Inject, Injectable } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { CreateUserDto } from './dto';
+import { MailerService } from '@nestjs-modules/mailer';
+import { readFileSync, writeFile } from 'fs';
+import * as path from 'path';
+import * as pug from 'pug';
+import { ClientProxy } from '@nestjs/microservices';
+import { deleteFile } from '../util/file';
+import { HttpService } from '@nestjs/axios';
+import DIR from '../util/path';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(
     private prisma: PrismaService,
     private readonly mailService: MailerService,
-    @Inject("RMQ_SERVICE") private readonly client: ClientProxy,
-    private readonly httpService: HttpService
+    @Inject('RMQ_SERVICE') private readonly client: ClientProxy,
+    private readonly httpService: HttpService,
   ) {}
 
   async deleteUserAvatar(userId: number) {
@@ -38,23 +37,21 @@ export class UserService {
   }
 
   async getUser(userId: number) {
-    try{
-
+    try {
       const res = await this.httpService.axiosRef.get(
-        `https://reqres.in/api/users/${userId}`
+        `https://reqres.in/api/users/${userId}`,
       );
-  
-      return res.data["data"];
-    }catch(err){
+
+      return res.data['data'];
+    } catch (err) {
       return {
-        message: "user account doesn't exist"
-      }
+        message: "user account doesn't exist",
+      };
     }
   }
 
   async getUserAvatar(userId: number) {
-    try{
-
+    try {
       const avatar = await this.prisma.avatar.findFirst({
         where: {
           reqresUserId: userId,
@@ -66,29 +63,28 @@ export class UserService {
         await this.prisma.avatar.create({
           data: {
             reqresUserId: userId,
-            path: ''
+            path: '',
           },
         });
-  
+
         const res = await this.httpService.axiosRef.get(
-          `https://reqres.in/api/users/${userId}`
+          `https://reqres.in/api/users/${userId}`,
         );
-  
-        const avatarUrl = res.data["data"]["avatar"];
-  
+
+        const avatarUrl = res.data['data']['avatar'];
+
         const response = await this.httpService.axiosRef.get(avatarUrl, {
-          responseType: "arraybuffer",
+          responseType: 'arraybuffer',
         });
-        const buffer64 = Buffer.from(response.data, "binary").toString("base64");
-        const pth = path.join(
-          __dirname,
-          `../public/avatar-${userId}_b64.png`
+        const buffer64 = Buffer.from(response.data, 'binary').toString(
+          'base64',
         );
-  
+        const pth = path.join(__dirname, `../public/avatar-${userId}_b64.png`);
+
         writeFile(pth, buffer64, (err: any) => {
           console.log(err);
         });
-  
+
         //saving path of encoded image to db
         await this.prisma.avatar.update({
           where: {
@@ -98,16 +94,15 @@ export class UserService {
             path: `/public/avatar-${userId}_b64.png`,
           },
         });
-  
+
         return buffer64;
-      
       } else {
-        return readFileSync(path.join(DIR, avatar.path)).toString("base64");
+        return readFileSync(path.join(DIR, avatar.path)).toString('base64');
       }
-    }catch(err){
+    } catch (err) {
       return {
-        message: "user account doesn't exist"
-      }
+        message: "user account doesn't exist",
+      };
     }
   }
 
@@ -116,7 +111,7 @@ export class UserService {
       `https://reqres.in/api/users`,
       {
         ...dto,
-      }
+      },
     );
 
     const user = await this.prisma.user.create({
@@ -129,27 +124,26 @@ export class UserService {
     //creating avatar entry with reqres userId
     await this.prisma.avatar.create({
       data: {
-        reqresUserId: parseInt(res.data["id"]),
-        path: "",
+        reqresUserId: parseInt(res.data['id']),
+        path: '',
       },
     });
 
     //preparing email template and its data
     const templateFile = path.join(
       __dirname,
-      "../views/template/notification.pug"
+      '../views/template/notification.pug',
     );
-    const socialMediaImg = path.join(__dirname, "../public/facebook.png");
-    const imageDataSocialMedia = readFileSync(socialMediaImg).toString(
-      "base64"
-    );
+    const socialMediaImg = path.join(__dirname, '../public/facebook.png');
+    const imageDataSocialMedia =
+      readFileSync(socialMediaImg).toString('base64');
 
     const pugData = {
       title: dto.name,
       description:
-        "This is to inform you that we have received you credentials",
+        'This is to inform you that we have received you credentials',
       imgSocial: imageDataSocialMedia,
-      year: "2024",
+      year: '2024',
     };
 
     const render = this._bodytemplete(templateFile, pugData);
@@ -162,7 +156,7 @@ export class UserService {
   }
 
   async _publish(user: User) {
-    this.client.emit<User>("user_created", { ...user });
+    this.client.emit<User>('user_created', { ...user });
   }
 
   _bodytemplete(template: string, data: any) {
@@ -173,15 +167,15 @@ export class UserService {
     await this.mailService
       .sendMail({
         to: to,
-        from: "sender@yourdomain.com",
-        subject: "User Created!",
+        from: 'sender@yourdomain.com',
+        subject: 'User Created!',
         html: body,
       })
       .then(() => {
-        console.log("Email sent");
+        console.log('Email sent');
       })
       .catch((e) => {
-        console.log("Error sending email", e);
+        console.log('Error sending email', e);
       });
   }
 }

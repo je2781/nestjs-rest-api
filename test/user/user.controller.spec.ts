@@ -88,7 +88,7 @@ describe('UserController (unit)', () => {
         jest
           .spyOn(userService, 'createUser')
           .mockResolvedValue(createdUserMock);
-     
+
         const result = await userController.createUser(dto);
 
         expect(result).toBe(createdUserMock);
@@ -119,7 +119,7 @@ describe('UserController (unit)', () => {
     });
     describe('Avatar', () => {
       const mockDeleteFunctionReturn = {
-        message: 'File deleted from file system'
+        message: 'File deleted from file system',
       };
 
       it('should delete avatar fromm db entry, and file system', async () => {

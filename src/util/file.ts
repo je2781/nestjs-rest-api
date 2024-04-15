@@ -8,6 +8,6 @@ export const deleteFile = (filePath: string) => {
   });
 
   return {
-    message: 'File deleted'
+    message: 'File deleted',
   };
 };

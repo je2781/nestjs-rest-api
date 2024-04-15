@@ -14,9 +14,7 @@ export class PrismaService extends PrismaClient {
     });
   }
 
-  async cleanUp(){
-    return this.$transaction([
-        this.user.deleteMany()
-    ]);
-}
+  async cleanUp() {
+    return this.$transaction([this.user.deleteMany()]);
+  }
 }
