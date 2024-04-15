@@ -1,6 +1,6 @@
 version: '3.9'
 services:
-  dev-db:
+  prod-db:
     image: mongodb/mongodb-community-server:4.4.25-ubi8 
     # ports:
     #     - 27018:27017
@@ -10,7 +10,7 @@ services:
 
     networks:
       - reqres
-  rabbitmq:
+  prod-rabbitmq:
     image: rabbitmq:3.12-management-alpine
     ports:
         - 5672:5672

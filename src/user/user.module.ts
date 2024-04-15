@@ -1,11 +1,11 @@
-import { Module } from "@nestjs/common";
-import { UserService } from "./user.service";
-import { UserController } from "./user.controller";
-import { HttpModule } from "@nestjs/axios";
-import { ClientsModule, Transport } from "@nestjs/microservices";
-import { PugAdapter } from "@nestjs-modules/mailer/dist/adapters/pug.adapter";
-import { MailerModule } from "@nestjs-modules/mailer";
-import { ConfigModule, ConfigService } from "@nestjs/config";
+import { Module } from '@nestjs/common';
+import { UserService } from './user.service';
+import { UserController } from './user.controller';
+import { HttpModule } from '@nestjs/axios';
+import { ClientsModule, Transport } from '@nestjs/microservices';
+import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
+import { MailerModule } from '@nestjs-modules/mailer';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 
 @Module({
   providers: [UserService],
@@ -24,7 +24,7 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
           },
         },
         template: {
-          dir: __dirname + "../views/template/notification.pug",
+          dir: __dirname + '../views/template/notification.pug',
           adapter: new PugAdapter({ inlineCssEnabled: true }),
           options: {
             strict: true,
@@ -35,12 +35,12 @@ import { ConfigModule, ConfigService } from "@nestjs/config";
     }),
     ClientsModule.register([
       {
-        name: "RMQ_SERVICE",
+        name: 'RMQ_SERVICE',
         transport: Transport.RMQ,
         options: {
           queueOptions: {
-            urls: ["amqp://localhost:5672"],
-            queue: "user_message_queue",
+            urls: ['amqp://localhost:5672'],
+            queue: 'user_message_queue',
             durable: false,
           },
         },
