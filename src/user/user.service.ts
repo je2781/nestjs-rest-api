@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -107,23 +107,21 @@ export class UserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    try{
-
+    try {
       const res = await this.httpService.axiosRef.post(
         `https://reqres.in/api/users`,
         {
           ...dto,
         },
       );
-  
+
       const user = await this.prisma.user.create({
         data: {
           email: dto.email,
           name: dto.name,
         },
       });
-      
-  
+
       //preparing email template and its data
       const templateFile = path.join(
         __dirname,
@@ -132,7 +130,7 @@ export class UserService {
       const socialMediaImg = path.join(__dirname, '../public/facebook.png');
       const imageDataSocialMedia =
         readFileSync(socialMediaImg).toString('base64');
-  
+
       const pugData = {
         title: dto.name,
         description:
@@ -140,16 +138,16 @@ export class UserService {
         imgSocial: imageDataSocialMedia,
         year: '2024',
       };
-  
+
       const render = this._bodytemplete(templateFile, pugData);
       await this._processSendEmail(dto.email, render);
-  
+
       //publishing event to queue in RabbitMQ
       this._publish(user);
-  
+
       return res.data;
-    }catch(err){
-        throw err;
+    } catch (err) {
+      throw err;
     }
   }
 

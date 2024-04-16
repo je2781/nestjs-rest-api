@@ -11,7 +11,6 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
 import { PugAdapter } from '@nestjs-modules/mailer/dist/adapters/pug.adapter';
 import { PrismaModule } from '../../src/prisma/prisma.module';
 import { PrismaService } from '../../src/prisma/prisma.service';
-import { BadRequestException } from '@nestjs/common';
 
 describe('UserController (unit)', () => {
   let userService: UserService;
@@ -67,7 +66,6 @@ describe('UserController (unit)', () => {
       controllers: [UserController],
     }).compile();
 
-
     userService = moduleRef.get<UserService>(UserService);
     userController = moduleRef.get<UserController>(UserController);
   });
@@ -95,7 +93,6 @@ describe('UserController (unit)', () => {
 
         expect(result).toBe(createdUserMock);
       });
-
     });
     describe('Get User', () => {
       it('should return user json object', async () => {
