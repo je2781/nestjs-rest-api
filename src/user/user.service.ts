@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateUserDto } from './dto';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -107,52 +107,50 @@ export class UserService {
   }
 
   async createUser(dto: CreateUserDto) {
-    const res = await this.httpService.axiosRef.post(
-      `https://reqres.in/api/users`,
-      {
-        ...dto,
-      },
-    );
+    try{
 
-    const user = await this.prisma.user.create({
-      data: {
-        email: dto.email,
-        name: dto.name,
-      },
-    });
-
-    //creating avatar entry with reqres userId
-    await this.prisma.avatar.create({
-      data: {
-        reqresUserId: parseInt(res.data['id']),
-        path: '',
-      },
-    });
-
-    //preparing email template and its data
-    const templateFile = path.join(
-      __dirname,
-      '../views/template/notification.pug',
-    );
-    const socialMediaImg = path.join(__dirname, '../public/facebook.png');
-    const imageDataSocialMedia =
-      readFileSync(socialMediaImg).toString('base64');
-
-    const pugData = {
-      title: dto.name,
-      description:
-        'This is to inform you that we have received you credentials',
-      imgSocial: imageDataSocialMedia,
-      year: '2024',
-    };
-
-    const render = this._bodytemplete(templateFile, pugData);
-    await this._processSendEmail(dto.email, render);
-
-    //publishing event to queue in RabbitMQ
-    this._publish(user);
-
-    return res.data;
+      const res = await this.httpService.axiosRef.post(
+        `https://reqres.in/api/users`,
+        {
+          ...dto,
+        },
+      );
+  
+      const user = await this.prisma.user.create({
+        data: {
+          email: dto.email,
+          name: dto.name,
+        },
+      });
+      
+  
+      //preparing email template and its data
+      const templateFile = path.join(
+        __dirname,
+        '../views/template/notification.pug',
+      );
+      const socialMediaImg = path.join(__dirname, '../public/facebook.png');
+      const imageDataSocialMedia =
+        readFileSync(socialMediaImg).toString('base64');
+  
+      const pugData = {
+        title: dto.name,
+        description:
+          'This is to inform you that we have received you credentials',
+        imgSocial: imageDataSocialMedia,
+        year: '2024',
+      };
+  
+      const render = this._bodytemplete(templateFile, pugData);
+      await this._processSendEmail(dto.email, render);
+  
+      //publishing event to queue in RabbitMQ
+      this._publish(user);
+  
+      return res.data;
+    }catch(err){
+        return new ForbiddenException('Credentials incorrect');
+    }
   }
 
   async _publish(user: User) {

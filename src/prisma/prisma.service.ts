@@ -15,6 +15,6 @@ export class PrismaService extends PrismaClient {
   }
 
   async cleanUp() {
-    return this.$transaction([this.user.deleteMany()]);
+    return this.$transaction([this.user.deleteMany(), this.avatar.deleteMany()]);
   }
 }
